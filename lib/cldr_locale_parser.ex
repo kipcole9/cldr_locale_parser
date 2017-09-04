@@ -80,16 +80,4 @@ defmodule Cldr.Locale.Parser do
 
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> CldrLocaleParser.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
 end
