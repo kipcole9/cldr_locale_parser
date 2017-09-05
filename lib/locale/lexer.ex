@@ -1,4 +1,4 @@
-defmodule Cldr.Language.Lexer do
+defmodule Cldr.Locale.Lexer do
   @moduledoc """
   Tokenizes a language tag, typically to support
   parsing it.
@@ -11,7 +11,7 @@ defmodule Cldr.Language.Lexer do
   the is a relevant consideration.
   """
 
-  import Cldr.Language.Macro
+  import Cldr.Locale.Macro
   @max_length 1024
 
   def tokenize(string) when is_binary(string) and byte_size(string) <= @max_length do
@@ -31,12 +31,22 @@ defmodule Cldr.Language.Lexer do
   def tokenize(string),
     do: {:error, "Language tag of length #{String.length(string)} exceeds the maximum supported of #{@max_length} bytes."}
 
+  @private_use :private
+  defp token_type("x" = chars), do: {@private_use, 1, chars}
+
+  @transform :transform
+  defp token_type("t" = chars), do: {@transform, 1, chars}
+
+  @locale :locale
+  defp token_type("u" = chars), do: {@locale, 1, chars}
+
   @singleton :singleton
   defp token_type(<<a::8>> = chars) when a in ?a..?w or a in ?y..?z or a in ?0..?9,
     do: {@singleton, 1, chars}
 
-  @private_use :private_use
-  defp token_type("x" = chars), do: {@private_use, 1, chars}
+  @sep :t_field_separator
+  defp token_type(<<a::8, b::8>> = separator)
+    when is_alpha(a) and is_digit(b), do: {@sep, 2, separator}
 
   @digit "digit"
   defp token_type(<<a::8>> = digits)
@@ -78,7 +88,7 @@ defmodule Cldr.Language.Lexer do
     when is_alnum(a) and is_alnum(b) and is_alnum(c), do: format_token {@alnum, 3, alnum}
   defp token_type(<<a::8, b::8, c::8, d::8>> = alnum)
     when is_alnum(a) and is_alnum(b) and is_alnum(c) and is_alnum(d),
-    do: {@alnum, 4, alnum}
+    do: format_token {@alnum, 4, alnum}
   defp token_type(<<a::8, b::8, c::8, d::8, e::8>> = alnum)
     when is_alnum(a) and is_alnum(b) and is_alnum(c) and is_alnum(d)
     and is_alnum(e), do: format_token {@alnum, 5, alnum}
