@@ -18,7 +18,8 @@ defmodule Cldr.Locale.Parser do
 
   * `canonicalize/1` will parse, validate and make canonical the locale string.  Canonicalization
   will apply any CLDR language substitutions and add default script and territory to the parsed
-  result
+  result. It will also apply the common practise capitalizations (lower case for language, capital
+  case for script, upper case for territory.
 
   """
 

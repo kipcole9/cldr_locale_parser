@@ -28,8 +28,11 @@ defmodule Cldr.Locale.Lexer do
     end
   end
 
-  def tokenize(string),
-    do: {:error, "Language tag of length #{String.length(string)} exceeds the maximum supported of #{@max_length} bytes."}
+  def tokenize(string) do
+    {:error,
+      "Language tag of length #{String.length(string)} exceeds " <>
+      "the maximum supported of #{@max_length} bytes."}
+  end
 
   @private_use :private
   defp token_type("x" = chars), do: {@private_use, 1, chars}

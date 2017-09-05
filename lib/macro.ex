@@ -1,4 +1,4 @@
-defmodule Cldr.Language.Macro do
+defmodule Cldr.Locale.Macro do
   defmacro is_alpha(c) do
     quote do
       unquote(c) in ?a..?z
