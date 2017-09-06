@@ -72,3 +72,13 @@
   %                / "zh-xiang"
   %
   %  alphanum      = (ALPHA / DIGIT)     ; letters and numbers
+
+
+
+  Code Type	Value	Description in Referenced Standards
+  Language	und	Undetermined language
+  Script	Zzzz	Code for uncoded script, Unknown [UAX24]
+  Region  	ZZ	Unknown or Invalid Territory
+  Currency	XXX	The codes assigned for transactions where no currency is involved
+  Time Zone	unk	Unknown or Invalid Time Zone
+  Subdivision	ZZZZ	Unknown or Invalid Subdivision

@@ -9,6 +9,16 @@ defmodule CldrLocaLeLexerTest do
     assert Cldr.Locale.Lexer.tokenize("es-419") == {:ok, [{:alpha2, 2, "es"}, {:digit3, 3, "419"}]}
     assert Cldr.Locale.Lexer.tokenize("zh-Hans") == {:ok, [{:alpha2, 2, "zh"}, {:alpha4, 4, "hans"}]}
     assert Cldr.Locale.Lexer.tokenize("zh-Hant-TW") == {:ok, [{:alpha2, 2, "zh"}, {:alpha4, 4, "hant"}, {:alpha2, 2, "tw"}]}
+
+    assert Cldr.Locale.Lexer.tokenize("de-DE-u-co-phonebk") ==
+      {:ok,
+       [{:alpha2, 2, "de"}, {:alpha2, 2, "de"}, {:locale, 1, "u"},
+        {:alpha2, 2, "co"}, {:alpha7, 7, "phonebk"}]}
+
+    assert Cldr.Locale.Lexer.tokenize("en-US-x-twain") ==
+      {:ok,
+       [{:alpha2, 2, "en"}, {:alpha2, 2, "us"}, {:private, 1, "x"},
+        {:alpha5, 5, "twain"}]}
   end
 
   test "That we can lex a tag with t transform definition" do
@@ -25,7 +35,9 @@ defmodule CldrLocaLeLexerTest do
         {:alpha6, 6, "ungegn"}, {:alnum4, 4, "1972"}]}
   end
 
-  test "That we can lex a tag with l locale definition" do
-
+  test "that we can lex all the locales defined in CLDR" do
+    for locale <- Cldr.all_locales do
+      assert {:ok, _} = Cldr.Locale.Lexer.tokenize(locale)
+    end
   end
 end
