@@ -20,8 +20,9 @@ defmodule Cldr.Locale.Lexer do
         string
         |> String.downcase
         |> String.replace("_", "-")
-        |> String.split("-")
+        |> String.split(~r{-}, include_captures: true)
         |> Enum.map(&token_type/1)
+        |> Enum.map(fn {token, len, chars} -> {token, len, :binary.bin_to_list(chars)} end)
       {:ok, tokens}
     catch
       error -> error
@@ -34,13 +35,16 @@ defmodule Cldr.Locale.Lexer do
       "the maximum supported of #{@max_length} bytes."}
   end
 
+  @separator :separator
+  defp token_type("-" = chars), do: {@separator, 1, chars}
+
   @private_use :private
   defp token_type("x" = chars), do: {@private_use, 1, chars}
 
-  @transform :transform
+  @transform :t
   defp token_type("t" = chars), do: {@transform, 1, chars}
 
-  @locale :locale
+  @locale :u
   defp token_type("u" = chars), do: {@locale, 1, chars}
 
   @singleton :singleton

@@ -22,5 +22,12 @@ defmodule Cldr.Locale.Parser do
   case for script, upper case for territory.
 
   """
+  alias Cldr.Locale.Lexer
 
+  def parse(locale) do
+    case Lexer.tokenize(locale) do
+      {:ok, tokens} -> :locale_parser.parse(tokens)
+      {:error, reason} -> {:error, reason}
+    end
+  end
 end

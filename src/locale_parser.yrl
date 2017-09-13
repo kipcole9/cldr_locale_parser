@@ -1,19 +1,28 @@
   % Parse CLDR Language Tag (local tage)
 
-  Nonterminals langtag language extlang script region variant extension singleton_list
+  Nonterminals langtag language extlang script region singleton_list
                private_use private_list locale keyword key type type_list keyword_list
-               attribute attribute_list sep alpha23 alpha58 alnum18 alnum28 alnum38
-               alpha23 alpha 58.
+               attribute attribute_list sep alnum58 alnum18 alnum28 alnum38
+               alpha23 alpha58 language_tag variant extension variants extensions.
 
-  Terminals plus minus format currency_1 currency_2 currency_3 currency_4 percent
-    permille literal semicolon pad quote quoted_char.
+  Terminals alpha1 alpha2 alpha3 alpha4 alpha5 alpha6 alpha7 alpha8 separator singleton
+            alnum2 alnum3 alnum4 alnum5 alnum6 alnum7 alnum8 digit3
+            transform_list locale_list private alnum1 transform digit u.
+
+  Left 100 alpha23.
+  Left 200 alpha3.
+  Left 300 alnum28.
+  Left 400 alnum38.
+  Left 500 type.
+  Left 600 keyword.
+
 
   Rootsymbol language_tag.
 
   %  Language-Tag  = langtag             ; normal language tags
   %                / privateuse          ; private use tag
   %                / grandfathered       ; grandfathered tags
-  language_tag    -> langtag.
+  language_tag    -> langtag : '$1'.
 
   %  langtag       = language
   %                  ["-" script]
@@ -24,14 +33,14 @@
   langtag          -> language sep script sep region sep variants sep extensions sep private_use.
   langtag          -> language sep script sep region sep variants sep extensions.
   langtag          -> language sep script sep region sep variants.
-  langtag          -> language sep script sep region.
-  langtag          -> language sep script.
+  langtag          -> language sep script sep region : ['$1', '$3', '$5'].
+  langtag          -> language sep script : ['$1', '$3'].
   langtag          -> language.
 
   langtag          -> language sep region sep variants sep extensions sep private_use.
   langtag          -> language sep region sep variants sep extensions.
   langtag          -> language sep region sep variants.
-  langtag          -> language sep region.
+  langtag          -> language sep region : ['$1', '$3'].
 
   langtag          -> language sep variants sep extensions sep private_use.
   langtag          -> language sep variants sep extensions.
@@ -47,10 +56,10 @@
   %                                      ; extended language subtags
   %                / 4ALPHA              ; or reserved for future use
   %                / 5*8ALPHA            ; or registered language subtag
-  language         -> alpha23.
+  language         -> alpha23 : {language, '$1'}.
   language         -> alpha23 sep extlang.
-  language         -> alpha4.
-  language         -> alpha58.
+  language         -> alpha4 : {language, '$1'}.
+  language         -> alpha58 : {language, '$1'}.
 
   %  extlang       = 3ALPHA              ; selected ISO 639 codes
   %                  *2("-" 3ALPHA)      ; permanently reserved
@@ -59,27 +68,32 @@
   extlang          -> alpha3 sep alpha3 sep alpha3.
 
   %  script        = 4ALPHA              ; ISO 15924 code
-  script           -> alpha4.
+  script           -> alpha4 : {script, unwrap('$1')}.
 
   %
   %  region        = 2ALPHA              ; ISO 3166-1 code
   %                / 3DIGIT              ; UN M.49 code
-  region           -> alpha2.
-  region           -> digit3.
+  region           -> alpha2 : {region, unwrap('$1')}.
+  region           -> digit3 : {region, unwrap('$1')}.
   %
-  %  variant       = 5*8alphanum         ; registered variants
-  %                / (DIGIT 3alphanum)
+  %  variant       = 5*8alnumnum         ; registered variants
+  %                / (DIGIT 3alnumnum)
+  variants         -> variant.
+  variants         -> variant variants.
   variant          -> alnum58.
   variant          -> digit alnum3.
 
-  %  extension     = singleton 1*("-" (2*8alphanum))
+  %  extension     = singleton 1*("-" (2*8alnumnum))
+  extensions       -> extension.
+  extensions       -> extension extensions.
+
   extension        -> singleton sep singleton_list.
   extension        -> locale locale_list.
   extension        -> transform transform_list.
   singleton_list   -> alnum28.
   singleton_list   -> alnum28 sep singleton_list.
 
-  %                                      ; Single alphanumerics
+  %                                      ; Single alnumnumerics
   %                                      ; "x" reserved for private use
   %  singleton     = DIGIT               ; 0 - 9
   %                / %x41-57             ; A - W
@@ -88,8 +102,9 @@
   %                / %x79-7A             ; y - z
   %  Singleton is define in the lexer
 
-  %  privateuse    = "x" 1*("-" (1*8alphanum))
+  %  privateuse    = "x" 1*("-" (1*8alnumnum))
   private_use      -> private sep private_list.
+
   private_list     -> alnum18.
   private_list     -> alnum18 sep private_list.
 
@@ -98,27 +113,27 @@
   %  for transforms
   %
   %  locale        = "u"  (1*("-" keyword) / 1*("-" attribute) *("-" keyword))
-  locale           -> sep keyword_list
-  locale           -> sep attribute_list.
-  locale           -> sep attribute_list keyword_list.
+  locale           -> u sep keyword_list.
+  locale           -> u sep attribute_list.
+  locale           -> u sep attribute_list keyword_list.
 
   %  keyword       = key ["-" type]
-  %  key           = alphanum ALPHA
-  %  type          = 3*8alphanum *("-" 3*8alphanum)
-  keyword          -> key.
-  keyword          -> key sep type.
+  %  key           = alnumnum ALPHA
+  %  type          = 3*8alnumnum *("-" 3*8alnumnum)
+  keyword          -> key : {'$1', nil}.
+  keyword          -> key sep type : {'$1', '$3'}.
 
-  key              -> alnum alpha.
+  key              -> alnum1 alpha1 : combine('$1', '$2').
 
-  type             -> alnum38.
-  type             -> alnum38 sep type_list.
-  type_list        -> type.
-  type_list        -> type sep type_list.
+  type             -> alnum38 : '$1'.
+  type             -> alnum38 sep type_list : append('$1', '$3').
+  type_list        -> type : '$1'.
+  type_list        -> type sep type_list : append('$1', '$3').
 
   keyword_list     -> keyword.
   keyword_list     -> keyword sep keyword_list.
 
-  %  attribute     = 3*8alphanum
+  %  attribute     = 3*8alnumnum
   attribute        -> alnum38.
   attribute_list   -> attribute.
   attribute_list   -> attribute sep attribute_list.
@@ -157,30 +172,33 @@
   %                / "zh-min-nan"        ; subtag or sequence of subtags
   %                / "zh-xiang"
   %
-  %  alphanum      = (ALPHA / DIGIT)     ; letters and numbers
+  %  alnumnum      = (ALPHA / DIGIT)     ; letters and numbers
 
   sep              -> separator.
 
-  alpha23          -> alpha2.
-  alpha23          -> alpha3.
+  alpha23          -> alpha2 : unwrap('$1').
+  alpha23          -> alpha3 : unwrap('$1').
 
-  alpha58          -> alpha5.
-  alpha58          -> alpha6.
-  alpha58          -> alpha7.
-  alpha58          -> alpha8.
+  alpha58          -> alpha5 : unwrap('$1').
+  alpha58          -> alpha6 : unwrap('$1').
+  alpha58          -> alpha7 : unwrap('$1').
+  alpha58          -> alpha8 : unwrap('$1').
 
-  alnum38          -> alnum3.
-  alnum38          -> alnum4.
-  alnum38          -> alnum5.
-  alnum38          -> alnum6.
-  alnum38          -> alnum7.
-  alnum38          -> alnum8.
+  alnum58          -> alnum5 : unwrap('$1').
+  alnum58          -> alnum6 : unwrap('$1').
+  alnum58          -> alnum7 : unwrap('$1').
+  alnum58          -> alnum8 : unwrap('$1').
 
-  alnum28          -> alnum38.
-  alnum28          -> alnum2.
+  alnum38          -> alnum3 : unwrap('$1').
+  alnum38          -> alnum4 : unwrap('$1').
+  alnum38          -> alnum58 : unwrap('$1').
 
-  alnum18          -> alnum28.
-  alnum18          -> alnum1.
+  alnum28          -> alnum38 : unwrap('$1').
+  alnum28          -> alnum2 : unwrap('$1').
+
+  alnum18          -> alnum28 : unwrap('$1').
+  alnum18          -> alnum1 : unwrap('$1').
+
 
   % Code Type  Value  Description in Referenced Standards
   % Language  und  Undetermined language
@@ -193,30 +211,29 @@
 
   Erlang code.
 
-  % If there is no negative pattern then build the default one
-  negative(_Positive) ->
-    {negative, [{minus, "-"}, {format, same_as_positive}]}.
-
-  % Append list items.  Consolidate literals if possible into
-  % a single list element.
-  append([{literal, Literal1}], [{literal, Literal2} | Rest]) ->
-    [{literal, list_to_binary([Literal1, Literal2])}] ++ Rest;
-  append(A, B) when is_list(A) and is_list(B) ->
-    A ++ B.
-
-  format(F) ->
-    [{format, F}].
-
-  % Doesn't matter what the negative format is
-  % its always the same as the positive one
-  % with potentially different suffix and prefix
-  neg_format(_F) ->
-    [{format, same_as_positive}].
-
-  pad(V) ->
-    [{pad, unwrap(V)}].
+  % % Append list items.  Consolidate literals if possible into
+  % % a single list element.
+  % append([{literal, Literal1}], [{literal, Literal2} | Rest]) ->
+  %   [{literal, list_to_binary([Literal1, Literal2])}] ++ Rest;
+  % append(A, B) when is_list(A) and is_list(B) ->
+  %   A ++ B.
 
   % Return a token value
   unwrap({_,_,V}) when is_list(V) -> unicode:characters_to_binary(V);
   unwrap({_,_,V}) -> V.
+
+  combine({_, _, V1}, {_, _, V2}) -> unicode:characters_to_binary(V1 ++ V2).
+
+  % debug(X) ->
+  %   {T, _, S} = X,
+  %   io:format("~w: ~s~n", [T, S]),
+  %   X.
+  %
+  % debug('$undefined', _M) ->
+  %   '$undefined';
+  % debug(X, M) ->
+  %   {T, _, S} = X,
+  %   io:format("~s: ~w: ~s~n", [M, T, S]),
+  %   X.
+
 
