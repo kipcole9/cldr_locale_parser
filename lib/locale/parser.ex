@@ -22,12 +22,33 @@ defmodule Cldr.Locale.Parser do
   case for script, upper case for territory.
 
   """
-  alias Cldr.Locale.Lexer
 
-  def parse(locale) do
-    case Lexer.tokenize(locale) do
-      {:ok, tokens} -> :locale_parser.parse(tokens)
-      {:error, reason} -> {:error, reason}
+  @grammar ABNF.load_file("priv/rfc5646.abnf")
+
+  def parse(locale) when is_list(locale) do
+    return_parse_result ABNF.apply(@grammar, "language-tag", locale, %Cldr.LanguageTag{})
+  end
+
+  def parse(locale) when is_binary(locale) do
+    locale
+    |> String.to_charlist
+    |> parse
+  end
+
+  def lenient_parse(locale) do
+    case parse_output = parse(locale) do
+      {:ok, result} -> {:ok, result}
+      {:error, _reason} -> return_minimum_viable_tag(parse_output)
     end
   end
+
+  defp return_parse_result(%{rest: [], state: state}), do: {:ok, state}
+  defp return_parse_result(%{rest: rest}) do
+    {:error, {Cldr.InvalidLanguageTag, "Could not parse language tag.  Error was detected at #{inspect rest}"}}
+  end
+
+  defp return_minimum_viable_tag(parse_output) do
+
+  end
+
 end

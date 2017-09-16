@@ -23,7 +23,8 @@ defmodule CldrLocaleParser.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_cldr, "~> 0.6.2"}
+      {:ex_cldr, "~> 0.6.2"},
+      {:ex_abnf, "~> 0.2.8"}
     ]
   end
 end
