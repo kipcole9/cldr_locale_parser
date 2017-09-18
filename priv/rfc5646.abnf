@@ -1,8 +1,16 @@
 !!!
 require Logger
 
-def normalize(input) do
+def normalize(input) when is_list(input) do
   String.downcase to_string(input)
+end
+
+def normalize(input) do
+  input
+end
+
+def normalize_list([list]) do
+  normalize(list)
 end
 
 def normalize_list(list) do
@@ -107,7 +115,7 @@ key           = alphanum ALPHA !!!
 type          = 3*8alphanum *("-" 3*8alphanum) !!!
                 _ = rule
                 _ = string_values
-                {:ok, state, :lists.flatten(values)}
+                {:ok, state, normalize(:lists.flatten(values))}
               !!!
 attribute     = 3*8alphanum !!! 
                 _ = rule
